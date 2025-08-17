@@ -1,0 +1,3 @@
+[submodule "libs/common-lib"]
+	path = libs/common-lib
+	url = https://github.com/pfpyh/common-lib.git
