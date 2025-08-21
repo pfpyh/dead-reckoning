@@ -2,12 +2,16 @@
 
 #include "common/lifecycle/Application.h"
 
-#include "controller/UartController.hpp"
+#include "uart/UartController.hpp"
+#include "uart/UartMessageHandler.hpp"
+
+#include "misc/IMU.hpp"
 
 class MainApplication : public ::common::Application
 {
 private :
     UartController _uart;
+    UartMessageHandler<IMU> _imuHandler;
 
 public :
     auto bootup() -> ::common::Future override;

@@ -1,47 +1,11 @@
-#include "controller/UartController.hpp"
+#include "uart/UartController.hpp"
 
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 
+#include "common/NonCopyable.hpp"
 #include "common/logging/Logger.hpp"
-
-UartHolder::UartHolder(std::shared_ptr<::common::Serial> serial) noexcept
-    : _serial(std::move(serial)) 
-    , _onReceivedHandlers(new Handlers()) {}
-
-UartHolder::~UartHolder() noexcept
-{
-    delete _onReceivedHandlers;
-    _serial->close();
-}
-
-auto UartHolder::reading(std::function<void(const std::string&)>&& onReceivedHandler) -> void
-{
-    std::lock_guard<std::mutex> scopedLock(_lock);
-    
-    auto* previous = _onReceivedHandlers.load();
-    auto* current = new Handlers(*previous);
-    current->push_back(std::move(onReceivedHandler));
-
-    _onReceivedHandlers.store(current);
-    delete previous;
-}
-
-auto UartHolder::writing(const std::string& message) noexcept -> bool
-{
-    return _serial->write(message.c_str(), message.length());
-}
-
-auto UartHolder::__work() -> void
-{
-    auto recv(_serial->readline());
-    if(!recv.empty())
-    {
-        auto handlers = _onReceivedHandlers.load();
-        for(auto& handler : (*handlers)) { handler(recv); }
-    }
-}
 
 UartController::UartController() = default;
 UartController::~UartController() { finalize(); }
@@ -70,12 +34,12 @@ auto UartController::set(UartType::type type,
         std::terminate();
     }
 
-    auto holder = std::make_shared<UartHolder>(serial);
+    auto holder = std::make_shared<UartHandler>(serial);
     _futures.push_back(std::move(holder->start()));
     _holderMap.insert({type, holder});
 }
 
-auto UartController::get(UartType::type type) noexcept -> std::shared_ptr<UartHolder>
+auto UartController::get(UartType::type type) noexcept -> std::shared_ptr<UartHandler>
 {
     auto itor = _holderMap.find(type);
     if(itor != _holderMap.end()) { return _holderMap[type]; }

@@ -27,5 +27,5 @@ target_include_directories(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
                       PRIVATE ${TARGET_LIB_NAME})
 
-#add_subdirectory(test)
+add_subdirectory(test)
 

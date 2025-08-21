@@ -1,4 +1,5 @@
 #include "MainApplication.hpp"
+#include "parser/IMUParser.hpp"
 
 #include "common/logging/Logger.hpp"
 
@@ -14,11 +15,13 @@ auto MainApplication::bootup() -> ::common::Future
         }
     }
 
-    auto holder = _uart.get(UartType::IMU);
-    holder->reading([](const std::string& message){
-        _INFO_("Recv={%s}", message.c_str());
+    _imuHandler.initialize(_uart.get(UartType::IMU),
+                           parse_Dummy,
+                           [](const IMU& imu) {
+        _INFO_("Gyro[%f, %f, %f] ACC[%f, %f, %f]", 
+               imu._gyro._roll, imu._gyro._pitch, imu._gyro._yaw,
+               imu._acc._x, imu._acc._y, imu._acc._z);
     });
-
     return nullptr;
 }
 

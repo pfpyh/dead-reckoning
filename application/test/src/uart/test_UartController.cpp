@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <thread>
 
-#include "controller/UartController.hpp"
+#include "uart/UartController.hpp"
 
 class MockSerial : public ::common::Serial
 {
@@ -13,72 +13,6 @@ public:
     MOCK_METHOD(std::string, readline, (), (override, noexcept));
     MOCK_METHOD(bool, write, (const char*, const size_t), (override, noexcept));
 };
-
-TEST(test_UartHolder, reading)
-{
-    // given
-    const std::string send{"Test message"};
-
-    std::shared_ptr<MockSerial> serialMock = std::make_shared<MockSerial>();
-    
-    EXPECT_CALL(*serialMock, readline())
-        .Times(::testing::AtLeast(1))
-        .WillRepeatedly(::testing::Return(send));
-
-    EXPECT_CALL(*serialMock, close()).Times(::testing::AtLeast(1));
-
-    UartHolder holder(serialMock);
-    auto threadFuture = holder.start();
-
-    // when
-    std::shared_ptr<std::promise<std::string>> promise 
-        = std::make_shared<std::promise<std::string>>();
-
-    bool once = true;
-    holder.reading([promise, &once](const std::string& message) {
-        if(!once) { return; }
-
-        promise->set_value(message); 
-        once = false;
-    });
-
-    auto future = promise->get_future();
-    auto status = future.wait_for(std::chrono::milliseconds(100));
-
-    holder.stop();
-    threadFuture.wait();
-
-    // then
-    ASSERT_EQ(status, std::future_status::ready);
-    ASSERT_EQ(future.get(), send);
-}
-
-TEST(test_UartHolder, writing)
-{
-    // given
-    std::shared_ptr<MockSerial> serialMock = std::make_shared<MockSerial>();
-
-    EXPECT_CALL(*serialMock, write(::testing::_,  ::testing::_))
-        .Times(2)
-        .WillOnce(::testing::Return(false))
-        .WillOnce(::testing::Return(true));
-
-    EXPECT_CALL(*serialMock, close()).Times(::testing::AtLeast(1));
-
-    UartHolder holder(serialMock);
-    auto threadFuture = holder.start();
-
-    // when
-    bool first = holder.writing("Test Input");
-    bool second = holder.writing("Test Input");
-
-    holder.stop();
-    threadFuture.wait();
-
-    // then
-    ASSERT_FALSE(first);
-    ASSERT_TRUE(second);
-}
 
 TEST(test_UartController, setUartAndReading)
 {
@@ -99,9 +33,9 @@ TEST(test_UartController, setUartAndReading)
 
     std::shared_ptr<std::promise<std::string>> promise 
         = std::make_shared<std::promise<std::string>>();
-    auto holder = controller.get(UartType::IMU);
+    auto handler = controller.get(UartType::IMU);
     bool once = true;
-    holder->reading([promise, &once](const std::string& message) {
+    handler->receiving([promise, &once](const std::string& message) {
         if(!once) { return; }
 
         promise->set_value(message); 
