@@ -12,7 +12,7 @@ auto parse_MPU6050(const std::string& message) -> IMU
     return IMU();
 }
 
-auto parse_Dummy(const std::string& message) -> IMU
+auto parse_imu_dummy(const std::string& message) -> IMU
 {
     std::array<double, 6> list;
 

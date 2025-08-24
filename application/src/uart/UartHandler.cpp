@@ -25,7 +25,7 @@ auto UartHandler::writing(const std::string& message) noexcept -> bool
 
 auto UartHandler::__work() -> void
 {
-    auto recv(_serial->readline());
+    auto recv(_serial->readline(common::EscapeSquence::CARRIAGE_RETURN));
     if(!recv.empty())
     {
         auto listeners = _listenerBuffer.get_buffer();
