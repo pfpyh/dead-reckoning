@@ -9,7 +9,8 @@ public:
     MOCK_METHOD(bool, open, (const std::string&, const ::common::Baudrate, const uint8_t), (override, noexcept));
     MOCK_METHOD(void, close, (), (override, noexcept));
     MOCK_METHOD(bool, is_open, (), (override, noexcept));
-    MOCK_METHOD(std::string, readline, (), (override, noexcept));
+    MOCK_METHOD(bool, read, (char*, size_t), (override, noexcept));
+    MOCK_METHOD(std::string, readline, (::common::EscapeSequence::type), (override, noexcept));
     MOCK_METHOD(bool, write, (const char*, const size_t), (override, noexcept));
 };
 
@@ -20,7 +21,7 @@ TEST(test_UartMessageHandler, singleHandler)
 
     std::shared_ptr<MockSerial> serialMock = std::make_shared<MockSerial>();
     
-    EXPECT_CALL(*serialMock, readline())
+    EXPECT_CALL(*serialMock, readline(::testing::_))
         .Times(::testing::AtLeast(1))
         .WillRepeatedly(::testing::Return(send));
 

@@ -23,9 +23,14 @@ public :
                     Parser&& parser, 
                     Listener&& listener) -> void
     {
-        if(_uartHandler || _parser || _listener)
-        {
+        if(_uartHandler || _parser || _listener) 
+        { 
             throw std::runtime_error("Already initialized"); 
+        }
+
+        if(!uartHandler || !parser || !listener)
+        {
+            throw std::invalid_argument("All parameter must be set");
         }
 
         _uartHandler = std::move(uartHandler);

@@ -24,6 +24,7 @@ message(STATUS GTEST_LINKS=${GTEST_LINKS})
 
 if (WIN32)
     add_definitions(-DWINDOWS)
+    add_definitions(-DUART_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/uart_conf_windows")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
 
     foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
@@ -34,6 +35,7 @@ if (WIN32)
     endforeach()
 elseif (UNIX)
     add_definitions(-DLINUX)
+    add_definitions(-DUART_CONF_PATH="${CMAKE_CURRENT_LIST_DIR}/uart_conf_linux")
 endif()
 
 add_subdirectory(application)
