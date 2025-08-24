@@ -53,7 +53,7 @@ auto UartController::read_configuration(const std::string& path) noexcept -> std
     std::ifstream file(path);
     if (!file.is_open()) 
     {
-        _ERROR_("Failed to open configuration file: %s", path.c_str());
+        _ERROR_("Failed to open configuration file: %s", std::strerror(errno));
         return configurations;
     }
     
